@@ -1,0 +1,19 @@
+attach("C:\\Users\\bugma\\Source\\Repos\\RulesetRunnerExtras\\AsanaLibrary\\bin\\Debug\\AsanaLibrary.dll", "A");
+var a = new A.AsanaLibrary("C:\\web\\asanasettings.ini");
+var json = JSON.parse(a.Get("users/me"));
+print(JSON.stringify(json, null, ' '));
+var json = JSON.parse(a.Get("workspaces"));
+print(JSON.stringify(json, null, ' '));
+a.SetQueryDict("workspace_gid", json.data[0].gid);
+var json = JSON.parse(a.Get("workspaces/{workspace_gid}"));
+print(JSON.stringify(json, null, ' '));
+//users
+var json = JSON.parse(a.Get("users"));
+print(JSON.stringify(json, null, ' '));
+var bruce = json.data.filter(function (e) {
+        return e.name === "Bruce Axtens"
+    });
+a.SetQueryDict("user_gid", bruce[0].gid);
+
+var json = JSON.parse(a.Get("users/{user_gid}"));
+print(JSON.stringify(json, null, 5));
