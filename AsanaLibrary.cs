@@ -2,24 +2,30 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 
 public class AsanaLibrary
 {
-    public  List<string> Trap = new List<string>();
-    internal  INI Ini;
-    internal  string apiUrl = "https://app.asana.com/api/1.0";
-    internal  Dictionary<string, object> queryDict = new Dictionary<string, object>();
-    internal  Dictionary<string, object> paramDict = new Dictionary<string, object>();
-    internal  string token;
+    public List<string> Trap = new List<string>();
+    internal INI Ini;
+    internal string apiUrl = "https://app.asana.com/api/1.0";
+    internal Dictionary<string, object> queryDict = new Dictionary<string, object>();
+    internal Dictionary<string, object> paramDict = new Dictionary<string, object>();
+    internal string token;
 
-    public AsanaLibrary(string ini)
+    public AsanaLibrary(string tkn)
     {
-        Ini = new INI(ini);
+        token = tkn;
+    }
+
+    public AsanaLibrary(FileInfo fi)
+    {
+        Ini = new INI(fi.FullName);
         token = Ini.IniReadValue("Authorisation", "Token", string.Empty);
     }
 
-    public  string Do(string method, string param)
+    public string Do(string method, string param)
     {
         {
             if (Trap.FindIndex(e => e == MethodBase.GetCurrentMethod().Name) > -1)
@@ -43,15 +49,15 @@ public class AsanaLibrary
             return response.Content;
         }
     }
-    public  string Get(string param) => Do("GET", param);
-    
-    public  string Put(string param) => Do("PUT", param);
-    
-    public  string Post(string param) => Do("POST", param);
-    
-    public  string Delete(string param) => Do("DELETE", param);
+    public string Get(string param) => Do("GET", param);
 
-    public  void SetQueryDict(string name, object value)
+    public string Put(string param) => Do("PUT", param);
+
+    public string Post(string param) => Do("POST", param);
+
+    public string Delete(string param) => Do("DELETE", param);
+
+    public void SetQueryDict(string name, object value)
     {
         if (Trap.FindIndex(e => e == MethodBase.GetCurrentMethod().Name) > -1)
         {
@@ -61,7 +67,7 @@ public class AsanaLibrary
         queryDict[name] = value;
     }
 
-    public  void SetParamDict(string name, object value)
+    public void SetParamDict(string name, object value)
     {
         if (Trap.FindIndex(e => e == MethodBase.GetCurrentMethod().Name) > -1)
         {
@@ -71,11 +77,11 @@ public class AsanaLibrary
         paramDict[name] = value;
     }
 
-    public  void ClearParamDict() => paramDict.Clear();
+    public void ClearParamDict() => paramDict.Clear();
 
-    public  void ClearQueryDict() => queryDict.Clear();
-    
-    public  string ReplaceFromDict(string pattern, Dictionary<string, object> dso)
+    public void ClearQueryDict() => queryDict.Clear();
+
+    public string ReplaceFromDict(string pattern, Dictionary<string, object> dso)
     {
         if (Trap.FindIndex(e => e == MethodBase.GetCurrentMethod().Name) > -1)
         {
