@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 
 public class AsanaLibrary
@@ -94,6 +95,16 @@ public class AsanaLibrary
             answer = answer.Replace("{" + kvp.Key + "}", kvp.Value.ToString());
         }
         return answer;
+    }
+
+    public string DumpQueryDict()
+    {
+        return string.Join("\r\n", (from kv in queryDict.Keys select (kv + " -> " + queryDict[kv])).ToList());
+    }
+
+    public string DumpParamDict()
+    {
+        return string.Join("\r\n", (from kv in paramDict.Keys select (kv + " -> " + paramDict[kv])).ToList());
     }
 }
 
