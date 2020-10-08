@@ -1,4 +1,6 @@
-﻿using RestSharp;
+﻿using Newtonsoft.Json;
+
+using RestSharp;
 
 using System;
 using System.Collections.Generic;
@@ -14,6 +16,8 @@ public class AsanaLibrary
     internal Dictionary<string, object> queryDict = new Dictionary<string, object>();
     internal Dictionary<string, object> paramDict = new Dictionary<string, object>();
     internal string token;
+    public string RestResponse;
+    public string RestRequest;
 
     public AsanaLibrary(string tkn)
     {
@@ -40,13 +44,22 @@ public class AsanaLibrary
             {
                 Method = (Method)Enum.Parse(typeof(Method), method)
             };
+
             request.AddHeader("Authorization", "Bearer " + token);
+            request.AddHeader("Accept", "application/json");
+            request.AddHeader("Content-Type", "application/json");
 
             foreach (var kvp in paramDict)
             {
                 request.AddParameter(kvp.Key, kvp.Value, ParameterType.GetOrPost);
             }
+
+            RestRequest = JsonConvert.SerializeObject(request);
+
             var response = client.Execute(request);
+
+            RestResponse = JsonConvert.SerializeObject(response);
+            
             return response.Content;
         }
     }
@@ -76,6 +89,26 @@ public class AsanaLibrary
         }
 
         paramDict[name] = value;
+    }
+
+    public string GetQueryDict(string name)
+    {
+        if (Trap.FindIndex(e => e == MethodBase.GetCurrentMethod().Name) > -1)
+        {
+            System.Diagnostics.Debugger.Launch();
+        }
+
+        return queryDict.TryGetValue(name, out object value) ? value.ToString() : null;
+    }
+
+    public string GetParamDict(string name)
+    {
+        if (Trap.FindIndex(e => e == MethodBase.GetCurrentMethod().Name) > -1)
+        {
+            System.Diagnostics.Debugger.Launch();
+        }
+
+        return paramDict.TryGetValue(name, out object value) ? value.ToString() : null;
     }
 
     public void ClearParamDict() => paramDict.Clear();
