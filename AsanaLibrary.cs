@@ -30,28 +30,35 @@ public class AsanaLibrary
         token = Ini.IniReadValue("Authorisation", "Token", string.Empty);
     }
 
-    public string Do(string method, string param)
+    public string Do(string method, string param, bool debug = false)
     {
         {
-            if (Trap.FindIndex(e => e == MethodBase.GetCurrentMethod().Name) > -1)
+            if (Trap.FindIndex(e => e == MethodBase.GetCurrentMethod().Name) > -1 || debug)
             {
                 System.Diagnostics.Debugger.Launch();
             }
 
-            var answer = ReplaceFromDict(param, queryDict);
+            var answer = ReplaceFromItems(param, queryDict);
             var client = new RestClient(apiUrl);
-            var request = new RestRequest(answer)
-            {
-                Method = (Method)Enum.Parse(typeof(Method), method)
-            };
+            var request = new RestRequest(answer, (Method)Enum.Parse(typeof(Method), method));
 
             request.AddHeader("Authorization", "Bearer " + token);
             request.AddHeader("Accept", "application/json");
-            request.AddHeader("Content-Type", "application/json");
+            if (method == "PUT" || method == "POST")
+                request.AddHeader("Content-Type", "application/json");
+            //request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
+            request.RequestFormat = DataFormat.Json;
 
-            foreach (var kvp in paramDict)
+            if (method == "POST" || method == "PUT")
             {
-                request.AddParameter(kvp.Key, kvp.Value, ParameterType.GetOrPost);
+                request.AddJsonBody(paramDict["body"]);
+            }
+            else
+            {
+                foreach (var kvp in paramDict)
+                {
+                    request.AddParameter(kvp.Key, kvp.Value, ParameterType.GetOrPost);
+                }
             }
 
             RestRequest = JsonConvert.SerializeObject(request);
@@ -59,19 +66,19 @@ public class AsanaLibrary
             var response = client.Execute(request);
 
             RestResponse = JsonConvert.SerializeObject(response);
-            
+
             return response.Content;
         }
     }
-    public string Get(string param) => Do("GET", param);
+    public string Get(string param, bool debug = false) => Do("GET", param, debug);
 
-    public string Put(string param) => Do("PUT", param);
+    public string Put(string param, bool debug = false) => Do("PUT", param, debug);
 
-    public string Post(string param) => Do("POST", param);
+    public string Post(string param, bool debug = false) => Do("POST", param, debug);
 
-    public string Delete(string param) => Do("DELETE", param);
+    public string Delete(string param, bool debug = false) => Do("DELETE", param, debug);
 
-    public void SetQueryDict(string name, object value)
+    public void AddQueryItem(string name, object value)
     {
         if (Trap.FindIndex(e => e == MethodBase.GetCurrentMethod().Name) > -1)
         {
@@ -81,7 +88,7 @@ public class AsanaLibrary
         queryDict[name] = value;
     }
 
-    public void SetParamDict(string name, object value)
+    public void AddParamItem(string name, object value)
     {
         if (Trap.FindIndex(e => e == MethodBase.GetCurrentMethod().Name) > -1)
         {
@@ -91,7 +98,7 @@ public class AsanaLibrary
         paramDict[name] = value;
     }
 
-    public string GetQueryDict(string name)
+    public string GetQueryItem(string name)
     {
         if (Trap.FindIndex(e => e == MethodBase.GetCurrentMethod().Name) > -1)
         {
@@ -101,7 +108,7 @@ public class AsanaLibrary
         return queryDict.TryGetValue(name, out object value) ? value.ToString() : null;
     }
 
-    public string GetParamDict(string name)
+    public string GetParamItem(string name)
     {
         if (Trap.FindIndex(e => e == MethodBase.GetCurrentMethod().Name) > -1)
         {
@@ -111,11 +118,11 @@ public class AsanaLibrary
         return paramDict.TryGetValue(name, out object value) ? value.ToString() : null;
     }
 
-    public void ClearParamDict() => paramDict.Clear();
+    public void ClearParamItems() => paramDict.Clear();
 
-    public void ClearQueryDict() => queryDict.Clear();
+    public void ClearQueryItems() => queryDict.Clear();
 
-    public string ReplaceFromDict(string pattern, Dictionary<string, object> dso)
+    public string ReplaceFromItems(string pattern, Dictionary<string, object> dso)
     {
         if (Trap.FindIndex(e => e == MethodBase.GetCurrentMethod().Name) > -1)
         {
@@ -130,14 +137,13 @@ public class AsanaLibrary
         return answer;
     }
 
-    public string DumpQueryDict()
+    public string DumpQueryItems()
     {
         return string.Join("\r\n", (from kv in queryDict.Keys select (kv + " -> " + queryDict[kv])).ToList());
     }
 
-    public string DumpParamDict()
+    public string DumpParamItems()
     {
         return string.Join("\r\n", (from kv in paramDict.Keys select (kv + " -> " + paramDict[kv])).ToList());
     }
 }
-
